@@ -1,5 +1,8 @@
+import * as Fuse from "./node_modules/fuse.js/dist/fuse.basic.min.js";
+
 class WheelieBabes {
-    constructor() {
+    constructor(content) {
+        this.content = content;
         this.contentWrapper = document.querySelector("main");
         this.day = new URLSearchParams(window.location.search).get("day"); // only for initial load.
         this.map = L.map("map").setView([39, -97.5], 4);
@@ -26,19 +29,8 @@ class WheelieBabes {
     }
 
     updateContent(day) {
-        fetch(`assets/json/${day}.json`)
-            .then((res) => {
-                if (!res.ok) {
-                    throw new Error("Status " + res.status);
-                }
-
-                return res.json();
-            })
-            .then((res) => {
-                console.log(res);
-                this.contentWrapper.innerHTML = `<h2>${res.title}</h2>${res.content}`;
-            })
-            .catch((err) => console.log(err));
+        const content = this.content[Number(day)];
+        this.contentWrapper.innerHTML = `<h2>${content.title}</h2>${content.content}`;
     }
 
     getTracks() {
@@ -105,6 +97,12 @@ class WheelieBabes {
     }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-    new WheelieBabes();
-});
+await fetch("http://127.0.0.1:5000/content")
+    .then((res) => (res.ok ? res.json() : false))
+    .then((res) => {
+        new WheelieBabes(res);
+    });
+
+//window.addEventListener("DOMContentLoaded", () => {
+//new WheelieBabes();
+//});

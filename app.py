@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, jsonify
 from flask_cors import CORS, cross_origin
 
@@ -14,7 +15,16 @@ CORS(app)
 def get_tracks():
       filelist = []
       for f in os.listdir(os.getcwd() + '/assets/gpx'):
-        if f.endswith(".gpx"):
             filelist.append( 'http://wheelie-babes-remix.test/assets/gpx/' + f)
       filelist.sort()
+      return jsonify(filelist)
+
+@app.route('/content', methods=['GET'])
+@cross_origin(origins=["http://wheelie-babes-remix.test"])
+def get_content():
+      filelist = {}
+      for f in os.listdir(os.getcwd() + '/assets/json'):
+          with open(os.getcwd()+ '/assets/json/' +f, 'r') as file:  
+            day = f.split('.')[0]
+            filelist[day] = json.load(file);
       return jsonify(filelist)

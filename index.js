@@ -1,17 +1,14 @@
-import * as Fuse from "./node_modules/fuse.js/dist/fuse.basic.min.js";
-
 class WheelieBabes {
     constructor(content) {
         this.content = content;
         this.contentWrapper = document.querySelector("main");
-        this.day = new URLSearchParams(window.location.search).get("day"); // only for initial load.
-        this.map = L.map("map").setView([39, -97.5], 4);
+        this.navWrapper = document.querySelector("nav");
+        this.searchWrapper = document.getElementById("search-wrapper");
 
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution:
-                '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        }).addTo(this.map);
+        /*
+         * Map setup.
+         */
+        this.map = L.map("map").setView([39, -97.5], 4);
 
         this.mapOptions = {
             async: true,
@@ -21,11 +18,45 @@ class WheelieBabes {
             },
         };
 
-        if (this.day) {
-            this.updateContent(this.day);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution:
+                '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(this.map);
+
+        /*
+         * Search setup.
+         */
+        const searchOptions = {
+            keys: ["content", "title"],
+        };
+
+        this.fuse = new Fuse(Object.values(this.content), searchOptions);
+
+        this.addSearchListener();
+
+        /*
+         * Start app.
+         */
+        const initialDay = new URLSearchParams(window.location.search).get(
+            "day"
+        );
+
+        if (initialDay) {
+            this.updateContent(initialDay);
         }
 
         this.getTracks();
+    }
+
+    addSearchListener() {
+        const btn = this.searchWrapper.querySelector("button");
+        const input = this.searchWrapper.querySelector("input");
+
+        btn.addEventListener("click", () => {
+            const result = this.fuse.search(input.value);
+            console.log(result);
+        });
     }
 
     updateContent(day) {
@@ -102,7 +133,3 @@ await fetch("http://127.0.0.1:5000/content")
     .then((res) => {
         new WheelieBabes(res);
     });
-
-//window.addEventListener("DOMContentLoaded", () => {
-//new WheelieBabes();
-//});

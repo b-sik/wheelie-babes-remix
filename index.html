@@ -20,10 +20,17 @@
             crossorigin=""
         ></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 
         <div id="map"></div>
 
-        <nav></nav>
+        <nav>
+            <div id="search-wrapper">
+                <input type="text" />
+                <button>Search</button>
+            </div>
+        </nav>
+
         <main></main>
 
         <script type="module" src="index.js"></script>

@@ -15,7 +15,7 @@ CORS(app)
 def get_tracks():
       filelist = []
       for f in os.listdir(os.getcwd() + '/assets/gpx'):
-            filelist.append( 'http://wheelie-babes-remix.test/assets/gpx/' + f)
+          filelist.append( 'http://wheelie-babes-remix.test/assets/gpx/' + f)
       filelist.sort()
       return jsonify(filelist)
 
@@ -25,6 +25,6 @@ def get_content():
       filelist = {}
       for f in os.listdir(os.getcwd() + '/assets/json'):
           with open(os.getcwd()+ '/assets/json/' +f, 'r') as file:  
-            day = f.split('.')[0]
+            day = int(f.split('.')[0])
             filelist[day] = json.load(file);
       return jsonify(filelist)

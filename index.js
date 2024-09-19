@@ -4,6 +4,7 @@ class WheelieBabes {
         this.contentWrapper = document.querySelector("main");
         this.navWrapper = document.querySelector("nav");
         this.searchWrapper = document.getElementById("search-wrapper");
+        this.contentList = this.navWrapper.querySelector("ol");
 
         /*
          * Map setup.
@@ -46,7 +47,36 @@ class WheelieBabes {
             this.updateContent(initialDay);
         }
 
+        this.populateNav();
         this.getTracks();
+    }
+
+    populateNav(contents = null) {
+        this.contentList.innerHTML = "";
+
+        if (!contents) {
+            contents = this.content;
+        }
+
+        Object.values(contents).forEach((content) => {
+            this.contentList.insertAdjacentHTML(
+                "beforeend",
+                `
+                <li id="day-${content.fields.day_number}"> 
+                <h3>Day ${content.fields.day_number}</h3>
+                <br />
+                <h4>${content.fields.locations.start} to ${content.fields.locations.end}</h4>
+                </li>
+                <hr />
+            `
+            );
+
+            document
+                .getElementById(`day-${content.fields.day_number}`)
+                .addEventListener("click", () => {
+                    this.updateContent(content.fields.day_number);
+                });
+        });
     }
 
     addSearchListener() {
@@ -55,7 +85,8 @@ class WheelieBabes {
 
         btn.addEventListener("click", () => {
             const result = this.fuse.search(input.value);
-            console.log(result);
+            const contents = Object.values(result).map((item) => item.item);
+            this.populateNav(contents);
         });
     }
 

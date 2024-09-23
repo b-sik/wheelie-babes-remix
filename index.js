@@ -104,14 +104,20 @@ class WheelieBabes {
     }
 
     addSearchListener() {
-        const btn = this.searchWrapper.querySelector("button");
+        const searchBtn = this.searchWrapper.querySelector("button#search");
+        const clearBtn = this.searchWrapper.querySelector("button#clear");
         const input = this.searchWrapper.querySelector("input");
 
-        btn.addEventListener("click", () => {
+        searchBtn.addEventListener("click", () => {
             const result = this.fuse.search(input.value);
             const contents = Object.values(result).map((item) => item.item);
             this.currentPage = 1;
             this.populateNav(contents);
+        });
+
+        clearBtn.addEventListener("click", () => {
+            input.value = "";
+            this.populateNav(this.content);
         });
     }
 
@@ -257,7 +263,7 @@ class WheelieBabes {
     }
 }
 
-await fetch("http://127.0.0.1:5000/content")
+fetch("http://127.0.0.1:5000/content")
     .then((res) => (res.ok ? res.json() : false))
     .then((res) => {
         new WheelieBabes(res);

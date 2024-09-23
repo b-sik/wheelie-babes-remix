@@ -4,7 +4,20 @@ class WheelieBabes {
         this.contentWrapper = document.querySelector("main");
         this.navWrapper = document.querySelector("nav");
         this.searchWrapper = document.getElementById("search-wrapper");
+        this.paginationWrapper = document.getElementById("pagination-wrapper");
         this.contentList = this.navWrapper.querySelector("ol");
+        this.currentPage = 1;
+
+        this.populateNav();
+
+        const initialDay = new URLSearchParams(window.location.search).get(
+            "day"
+        );
+
+        if (initialDay) {
+            this.updateContent(initialDay);
+            this.highlightActiveDay(initialDay);
+        }
 
         /*
          * Map setup.
@@ -25,6 +38,8 @@ class WheelieBabes {
                 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
 
+        this.getTracks();
+
         /*
          * Search setup.
          */
@@ -35,20 +50,6 @@ class WheelieBabes {
         this.fuse = new Fuse(Object.values(this.content), searchOptions);
 
         this.addSearchListener();
-
-        /*
-         * Start app.
-         */
-        const initialDay = new URLSearchParams(window.location.search).get(
-            "day"
-        );
-
-        if (initialDay) {
-            this.updateContent(initialDay);
-        }
-
-        this.populateNav();
-        this.getTracks();
     }
 
     populateNav(contents = null) {
@@ -58,16 +59,38 @@ class WheelieBabes {
             contents = this.content;
         }
 
-        Object.values(contents).forEach((content) => {
+        const paginate = this.paginate(
+            Object.values(contents).length,
+            this.currentPage,
+            10,
+            999
+        );
+
+        const { endIndex, startIndex, pages } = paginate;
+
+        this.paginationWrapper.innerHTML = "";
+        pages.forEach((page) => {
+            this.paginationWrapper.insertAdjacentHTML(
+                "beforeend",
+                `<button id='page-${page}' class="${page === this.currentPage ? "active-page" : ""}">${page}</button>`
+            );
+
+            document
+                .getElementById(`page-${page}`)
+                .addEventListener("click", () => {
+                    this.currentPage = page;
+                    this.populateNav(contents);
+                });
+        });
+
+        Object.values(contents).forEach((content, i) => {
             this.contentList.insertAdjacentHTML(
                 "beforeend",
                 `
-                <li id="day-${content.fields.day_number}"> 
+                <li role="button" id="day-${content.fields.day_number}" style="${i >= startIndex && i <= endIndex ? "" : "display:none;"}"> 
                 <h3>Day ${content.fields.day_number}</h3>
-                <br />
                 <h4>${content.fields.locations.start} to ${content.fields.locations.end}</h4>
                 </li>
-                <hr />
             `
             );
 
@@ -75,6 +98,7 @@ class WheelieBabes {
                 .getElementById(`day-${content.fields.day_number}`)
                 .addEventListener("click", () => {
                     this.updateContent(content.fields.day_number);
+                    this.setNewParams(content.fields.day_number);
                 });
         });
     }
@@ -86,6 +110,7 @@ class WheelieBabes {
         btn.addEventListener("click", () => {
             const result = this.fuse.search(input.value);
             const contents = Object.values(result).map((item) => item.item);
+            this.currentPage = 1;
             this.populateNav(contents);
         });
     }
@@ -143,6 +168,18 @@ class WheelieBabes {
         const url = new URL(window.location);
         url.searchParams.set("day", day);
         history.pushState(null, "", url);
+        this.highlightActiveDay(day);
+    }
+
+    highlightActiveDay(day) {
+        const prevActive = document.querySelector(".active-day");
+
+        if (prevActive) {
+            prevActive.classList.remove("active-day");
+        }
+
+        const li = document.getElementById(`day-${day}`);
+        li.classList.add("active-day");
     }
 
     toolTipMarkupStart(segment, track) {
@@ -156,6 +193,67 @@ class WheelieBabes {
                     -> ${track}<br />
                     ${segment.get_distance_imp().toFixed(2)} miles<br />
                     <- ${track}</code>`;
+    }
+
+    /**
+     * @link https://jasonwatmore.com/post/2018/08/07/javascript-pure-pagination-logic-in-vanilla-js-typescript
+     */
+    paginate(totalItems, currentPage = 1, pageSize = 10, maxPages = 10) {
+        // calculate total pages
+        let totalPages = Math.ceil(totalItems / pageSize);
+
+        // ensure current page isn't out of range
+        if (currentPage < 1) {
+            currentPage = 1;
+        } else if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        let startPage, endPage;
+        if (totalPages <= maxPages) {
+            // total pages less than max so show all pages
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            // total pages more than max so calculate start and end pages
+            let maxPagesBeforeCurrentPage = Math.floor(maxPages / 2);
+            let maxPagesAfterCurrentPage = Math.ceil(maxPages / 2) - 1;
+            if (currentPage <= maxPagesBeforeCurrentPage) {
+                // current page near the start
+                startPage = 1;
+                endPage = maxPages;
+            } else if (currentPage + maxPagesAfterCurrentPage >= totalPages) {
+                // current page near the end
+                startPage = totalPages - maxPages + 1;
+                endPage = totalPages;
+            } else {
+                // current page somewhere in the middle
+                startPage = currentPage - maxPagesBeforeCurrentPage;
+                endPage = currentPage + maxPagesAfterCurrentPage;
+            }
+        }
+
+        // calculate start and end item indexes
+        let startIndex = (currentPage - 1) * pageSize;
+        let endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
+
+        // create an array of pages to ng-repeat in the pager control
+        let pages = Array.from(Array(endPage + 1 - startPage).keys()).map(
+            (i) => startPage + i
+        );
+
+        // return object with all pager properties required by the view
+        return {
+            totalItems: totalItems,
+            currentPage: currentPage,
+            pageSize: pageSize,
+            totalPages: totalPages,
+            startPage: startPage,
+            endPage: endPage,
+            startIndex: startIndex,
+            endIndex: endIndex,
+            pages: pages,
+        };
     }
 }
 

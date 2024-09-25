@@ -127,7 +127,7 @@ class WheelieBabes {
     }
 
     getTracks() {
-        fetch("http://127.0.0.1:5000/tracks")
+        fetch("https://127.0.0.1:5000/tracks")
             .then((res) => (res.ok ? res.json() : false))
             .then((res) => {
                 res.forEach((track) => {
@@ -263,7 +263,7 @@ class WheelieBabes {
     }
 }
 
-fetch("http://127.0.0.1:5000/content")
+fetch("https://127.0.0.1:5000/content")
     .then((res) => (res.ok ? res.json() : false))
     .then((res) => {
         new WheelieBabes(res);

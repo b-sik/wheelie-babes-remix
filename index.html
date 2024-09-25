@@ -8,12 +8,8 @@
             crossorigin=""
         />
         <link rel="stylesheet" href="style.css" />
-        <link rel="stylesheet" href="normalize.css" />
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Wheelie Babes Remix</title>
-    </head>
-    <body>
         <script
             src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -21,21 +17,27 @@
         ></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+        <title>Wheelie Babes Remix</title>
+    </head>
+    <body>
+        <header>
+            <h1>Wheelie Babes</h1>
 
-        <div id="map"></div>
+            <div id="map"></div>
 
-        <nav>
-            <div id="search-wrapper">
-                <input type="text" />
-                <button id="search">Search</button>
-                <button id="clear">Clear</button>
-            </div>
-            <ol></ol>
-            <div id="pagination-wrapper"></div>
-        </nav>
+            <nav>
+                <div id="search-wrapper">
+                    <input type="text" />
+                    <button id="search">Search</button>
+                    <button id="clear">Clear</button>
+                </div>
+                <ol></ol>
+                <div id="pagination-wrapper"></div>
+            </nav>
+        </header>
 
         <main></main>
 
-        <script type="module" src="index.js"></script>
+        <script src="index.js"></script>
     </body>
 </html>

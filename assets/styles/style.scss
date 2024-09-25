@@ -1,0 +1,86 @@
+@import "normalize";
+
+@font-face {
+    font-family: "Racing Sans One";
+    src: url("assets/fonts/RacingSansOne-Regular.woff");
+    src:
+        url("assets/fonts/RacingSansOne-Regular.woff") format("woff"),
+        url("assets/fonts/RacingSansOne-Regular.ttf") format("ttf");
+}
+
+@mixin phone-only {
+    @media (max-width: 599px) {
+        @content;
+    }
+}
+@mixin tablet-portrait {
+    @media (min-width: 600px) {
+        @content;
+    }
+}
+@mixin tablet-landscape {
+    @media (min-width: 900px) {
+        @content;
+    }
+}
+@mixin desktop {
+    @media (min-width: 1200px) {
+        @content;
+    }
+}
+@mixin big-desktop {
+    @media (min-width: 1800px) {
+        @content;
+    }
+}
+
+/*:root {*/
+/*}*/
+
+html {
+    margin: 0;
+    padding: 0;
+    scrollbar-color: var(--primary-color) var(--secondary-color);
+}
+
+html {
+    width: 100%;
+}
+
+body {
+    width: 100%;
+}
+
+main {
+    width: 100%;
+}
+
+h1 {
+    font-family: "Racing Sans One", sans-serif;
+    text-transform: uppercase;
+    font-size: 4rem;
+}
+
+img {
+    max-width: 100%;
+}
+
+#map {
+    height: 400px;
+}
+
+nav ol {
+    list-style: none;
+}
+
+nav ol li {
+    cursor: pointer;
+}
+
+.active-day {
+    background: yellow;
+}
+
+.active-page {
+    background: yellow;
+}

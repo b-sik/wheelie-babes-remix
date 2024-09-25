@@ -10,17 +10,19 @@ if __name__ == '__main__':
     
 CORS(app)
 
+origins = ["https://wheelie-babes-remix.test", "https://localhost:3000"]
+
 @app.route('/tracks', methods=['GET'])
-@cross_origin(origins=["http://wheelie-babes-remix.test"])
+@cross_origin(origins=origins)
 def get_tracks():
       filelist = []
       for f in os.listdir(os.getcwd() + '/assets/gpx'):
-          filelist.append( 'http://wheelie-babes-remix.test/assets/gpx/' + f)
+          filelist.append( 'https://wheelie-babes-remix.test/assets/gpx/' + f)
       filelist.sort()
       return jsonify(filelist)
 
 @app.route('/content', methods=['GET'])
-@cross_origin(origins=["http://wheelie-babes-remix.test"])
+@cross_origin(origins=origins)
 def get_content():
       filelist = {}
       for f in os.listdir(os.getcwd() + '/assets/json'):

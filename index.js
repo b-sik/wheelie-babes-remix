@@ -1,10 +1,10 @@
 class WheelieBabes {
     constructor(content) {
         this.content = content;
-        this.contentWrapper = document.querySelector("main");
+        this.contentWrapper = document.querySelector("article");
         this.navWrapper = document.querySelector("nav");
-        this.searchWrapper = document.getElementById("search-wrapper");
-        this.paginationWrapper = document.getElementById("pagination-wrapper");
+        this.searchWrapper = document.querySelector(".search-wrapper");
+        this.paginationWrapper = document.querySelector(".pagination-wrapper");
         this.contentList = this.navWrapper.querySelector("ol");
         this.currentPage = 1;
 
@@ -17,6 +17,9 @@ class WheelieBabes {
         if (initialDay) {
             this.updateContent(initialDay);
             this.highlightActiveDay(initialDay);
+        } else {
+            this.updateContent(1);
+            this.highlightActiveDay(1);
         }
 
         /*
@@ -88,8 +91,8 @@ class WheelieBabes {
                 "beforeend",
                 `
                 <li role="button" id="day-${content.fields.day_number}" style="${i >= startIndex && i <= endIndex ? "" : "display:none;"}"> 
-                <h3>Day ${content.fields.day_number}</h3>
-                <h4>${content.fields.locations.start} to ${content.fields.locations.end}</h4>
+                <h4>Day ${content.fields.day_number}</h4>
+                <h5>${content.fields.locations.start} to ${content.fields.locations.end}</h5>
                 </li>
             `
             );

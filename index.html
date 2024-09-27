@@ -10,6 +10,9 @@
         <link rel="stylesheet" href="style.css" />
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Wheelie Babes Remix</title>
+
         <script
             src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -17,26 +20,38 @@
         ></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
-        <title>Wheelie Babes Remix</title>
     </head>
     <body>
         <header>
             <h1>Wheelie Babes</h1>
 
-            <div id="map"></div>
+            <h2>
+                Hello! We're Tess & Eric, and we biked across the US in 2022.
+            </h2>
 
-            <nav>
-                <div id="search-wrapper">
-                    <input type="text" />
-                    <button id="search">Search</button>
-                    <button id="clear">Clear</button>
-                </div>
-                <ol></ol>
-                <div id="pagination-wrapper"></div>
-            </nav>
+            <div id="map"></div>
+            <small
+                >Select a route on the map to read about it or browse the Trip
+                Log below.</small
+            >
         </header>
 
-        <main></main>
+        <main>
+            <nav>
+                <h1>Trip Log</h1>
+                <div class="search-wrapper">
+                    <input type="text" />
+                    <div class="search-wrapper__btns">
+                        <button id="search">Search</button>
+                        <button id="clear">Clear</button>
+                    </div>
+                </div>
+                <ol></ol>
+                <div class="pagination-wrapper"></div>
+            </nav>
+
+            <article></article>
+        </main>
 
         <script src="index.js"></script>
     </body>

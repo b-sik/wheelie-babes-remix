@@ -651,11 +651,6 @@ textarea {
 html {
   margin: 0;
   padding: 0;
-  scrollbar-color: var(--primary-color) var(--secondary-color);
-}
-
-html {
-  width: 100%;
 }
 
 body {
@@ -666,10 +661,19 @@ main {
   width: 100%;
 }
 
-h1 {
+header {
+  text-align: center;
+  padding-bottom: 3rem;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid black;
+}
+header h1 {
   font-family: "Racing Sans One", sans-serif;
   text-transform: uppercase;
   font-size: 4rem;
+}
+header h2 {
+  font-style: italic;
 }
 
 img {
@@ -678,22 +682,84 @@ img {
 
 #map {
   height: 400px;
+  margin: 0 6rem;
 }
 
-nav ol {
+main {
+  display: flex;
+  align-items: flex-start;
+}
+main nav {
+  margin: 0 1rem;
+  max-width: 30%;
+  border: 1px solid black;
+  padding: 0.5rem;
+}
+main nav h1 {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+main nav .search-wrapper input {
+  width: 100%;
+}
+main nav .search-wrapper__btns {
+  display: flex;
+}
+main nav ol {
+  padding: 0;
+  margin: 0;
   list-style: none;
 }
-
-nav ol li {
+main nav ol li {
   cursor: pointer;
+  padding: 0.2rem 1rem;
+  border-radius: 15px;
+  margin: 0.5rem 0;
 }
-
-.active-day {
+main nav ol li.active-day {
+  background: yellow;
+  border: 1px solid gray;
+}
+main nav ol li h4 {
+  font-weight: 400;
+  margin: 0;
+}
+main nav ol li h5 {
+  font-weight: 300;
+  margin: 0;
+}
+main nav .pagination-wrapper button {
+  padding: 0.2rem 0.4rem;
+}
+main nav .pagination-wrapper .active-page {
   background: yellow;
 }
-
-.active-page {
-  background: yellow;
+main article {
+  padding: 0 1rem;
+}
+main article h2:first-of-type {
+  margin-top: 0;
+  font-size: 2rem;
+}
+main article blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+}
+main article blockquote cite::before {
+  content: "- ";
+}
+main article figure {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: wrap;
+}
+main article figure img,
+main article figure video {
+  max-height: 500px;
 }
 
 /*# sourceMappingURL=style.css.map */

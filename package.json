@@ -26,7 +26,7 @@
         "map": false
     },
     "scripts": {
-        "start": "browser-sync start --proxy 'https://wheelie-babes-remix.test/' --files './*.css, .*.html'",
+        "start": "browser-sync start --proxy 'https://wheelie-babes-remix.test/' --files './*.css, ./*.html, ./*.js'",
         "watch:css": "sass --watch --update --style=expanded ./assets/styles:./",
         "compile:css": "sass --no-source-map --style=compressed ./assets/styles:./",
         "compile:rtl": "rtlcss style.css style-rtl.css"

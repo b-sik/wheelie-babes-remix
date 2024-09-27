@@ -754,11 +754,13 @@ main article blockquote cite::before {
 main article figure {
   display: flex;
   justify-content: center;
+  align-items: center;
   width: 100%;
   flex-wrap: wrap;
 }
 main article figure img,
 main article figure video {
+  margin: 0.5rem;
   max-height: 500px;
 }
 

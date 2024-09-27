@@ -127,6 +127,49 @@ class WheelieBabes {
     updateContent(day) {
         const content = this.content[Number(day)];
         this.contentWrapper.innerHTML = `<h2>${content.title}</h2>${content.content}`;
+
+        this.reloadLightbox();
+    }
+
+    reloadLightbox() {
+        const directFigures =
+            this.contentWrapper.querySelectorAll(":scope > figure");
+
+        if (directFigures) {
+            directFigures.forEach((figure) => {
+                const nestedFigures =
+                    figure.querySelectorAll(":scope > figure");
+
+                if (nestedFigures) {
+                    const mediaWrappers = [];
+
+                    nestedFigures.forEach((nestedFigure) => {
+                        const media = nestedFigure.querySelector("img, video");
+
+                        if (media) {
+                            const mediaWrapper = document.createElement("a");
+                            mediaWrapper.setAttribute("href", media.src);
+                            mediaWrapper.setAttribute(
+                                "data-gallery",
+                                "gallery"
+                            );
+                            mediaWrapper.classList.add("glightbox");
+                            mediaWrapper.appendChild(media);
+
+                            mediaWrappers.push(mediaWrapper);
+                        }
+                    });
+
+                    figure.innerHTML = "";
+
+                    mediaWrappers.forEach((wrapper) => {
+                        figure.append(wrapper);
+                    });
+                }
+            });
+        }
+
+        window.lightbox.reload();
     }
 
     getTracks() {

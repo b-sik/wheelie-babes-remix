@@ -163,11 +163,13 @@ main {
         figure {
             display: flex;
             justify-content: center;
+            align-items: center;
             width: 100%;
             flex-wrap: wrap;
 
             img,
             video {
+                margin: 0.5rem;
                 max-height: 500px;
             }
         }

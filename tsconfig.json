@@ -5,8 +5,8 @@
         "lib": ["dom", "es2022"],
         "strict": true,
         "esModuleInterop": true,
-        "typeRoots": ["./node_modules/@types"],
+        "typeRoots": ["node_modules/@types"],
         "allowUmdGlobalAccess": true
     },
-    "exclude": ["./node_modules"]
+    "exclude": ["node_modules"]
 }

@@ -55,7 +55,7 @@ export class WheelieBabes {
     contentList: HTMLOListElement | null | undefined;
     currentPage: number;
     map: L.Map;
-    mapOptions: GPXOptions;
+    mapOptions: object;
     fuse: Fuse<ContentItem[]>;
     lightbox: GLightbox;
 
@@ -342,13 +342,13 @@ export class WheelieBabes {
             .addTo(this.map);
     }
 
-    toolTipMarkupStart(segment: GPX, track: string): string {
+    toolTipMarkupStart(segment: any, track: string): string {
         return `📍<code>${segment.get_name().substring(0, 31)}<br />
                     <- ${track}<br />
                     ${segment.get_distance_imp().toFixed(2)} miles</code>`;
     }
 
-    toolTipMarkupEnd(segment: GPX, track: string): string {
+    toolTipMarkupEnd(segment: any, track: string): string {
         return `📍<code>${segment.get_name().substring(0, 31)}<br />
                     -> ${track}<br />
                     ${segment.get_distance_imp().toFixed(2)} miles<br />

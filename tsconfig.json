@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "es2022",
+        "lib": ["dom", "es2022"],
+        "strict": true,
+        "esModuleInterop": true,
+        "typeRoots": ["./node_modules/@types"],
+        "allowUmdGlobalAccess": true
+    },
+    "exclude": ["./node_modules"]
+}

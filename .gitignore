@@ -1,0 +1,12 @@
+.venv
+__pycache__
+
+node_modules
+
+.DS_Store
+
+style.css
+style.css.map
+
+index.js
+index.js.map

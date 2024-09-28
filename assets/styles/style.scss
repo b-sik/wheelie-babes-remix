@@ -1,0 +1,177 @@
+@import "normalize";
+
+@font-face {
+    font-family: "Racing Sans One";
+    src: url("assets/fonts/RacingSansOne-Regular.woff");
+    src:
+        url("assets/fonts/RacingSansOne-Regular.woff") format("woff"),
+        url("assets/fonts/RacingSansOne-Regular.ttf") format("ttf");
+}
+
+@mixin phone-only {
+    @media (max-width: 599px) {
+        @content;
+    }
+}
+@mixin tablet-portrait {
+    @media (min-width: 600px) {
+        @content;
+    }
+}
+@mixin tablet-landscape {
+    @media (min-width: 900px) {
+        @content;
+    }
+}
+@mixin desktop {
+    @media (min-width: 1200px) {
+        @content;
+    }
+}
+@mixin big-desktop {
+    @media (min-width: 1800px) {
+        @content;
+    }
+}
+
+/*:root {*/
+/*}*/
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100%;
+}
+
+main {
+    width: 100%;
+}
+
+header {
+    text-align: center;
+    padding-bottom: 3rem;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid black;
+
+    h1 {
+        font-family: "Racing Sans One", sans-serif;
+        text-transform: uppercase;
+        font-size: 4rem;
+    }
+
+    h2 {
+        font-style: italic;
+    }
+}
+
+img {
+    max-width: 100%;
+}
+
+#map {
+    height: 400px;
+    margin: 0 6rem;
+}
+
+main {
+    display: flex;
+    align-items: flex-start;
+
+    nav {
+        margin: 0 1rem;
+        max-width: 30%;
+        border: 1px solid black;
+        padding: 0.5rem;
+
+        h1 {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .search-wrapper {
+            input {
+                width: 100%;
+            }
+
+            &__btns {
+                display: flex;
+            }
+        }
+
+        ol {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+
+            li {
+                cursor: pointer;
+                padding: 0.2rem 1rem;
+                border-radius: 15px;
+                margin: 0.5rem 0;
+
+                &.active-day {
+                    background: yellow;
+                    border: 1px solid gray;
+                }
+
+                h4 {
+                    font-weight: 400;
+                    margin: 0;
+                }
+
+                h5 {
+                    font-weight: 300;
+                    margin: 0;
+                }
+            }
+        }
+
+        .pagination-wrapper {
+            button {
+                padding: 0.2rem 0.4rem;
+            }
+
+            .active-page {
+                background: yellow;
+            }
+        }
+    }
+
+    article {
+        padding: 0 1rem;
+
+        h2:first-of-type {
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        blockquote {
+            background: #f9f9f9;
+            border-left: 10px solid #ccc;
+            margin: 1.5em 10px;
+            padding: 0.5em 10px;
+
+            cite::before {
+                content: "- ";
+            }
+        }
+
+        figure {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+
+            img,
+            video {
+                margin: 0.5rem;
+                max-height: 500px;
+            }
+        }
+    }
+}

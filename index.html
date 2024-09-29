@@ -16,6 +16,17 @@
             src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.0/gpx.min.js"
             defer
         ></script>
+
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
+
+        <script type="text/javascript">
+            const lightbox = GLightbox();
+        </script>
+
         <title>Wheelie Babes Remix</title>
     </head>
     <body>
@@ -36,13 +47,10 @@
         <main>
             <nav>
                 <h1>Trip Log</h1>
-                <div class="search-wrapper">
-                    <input type="text" />
-                    <div class="search-wrapper__btns">
-                        <button id="search">Search</button>
-                        <button id="clear">Clear</button>
-                    </div>
-                </div>
+                <form class="search-wrapper">
+                    <input type="search" placeholder="Search..." />
+                    <button id="search" type="submit">Search</button>
+                </form>
                 <ol></ol>
                 <div class="pagination-wrapper"></div>
             </nav>

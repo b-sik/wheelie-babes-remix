@@ -1,5 +1,4 @@
 import Fuse from "fuse.js";
-import GLightbox from "glightbox";
 
 interface Paginate {
     totalItems: number;
@@ -57,7 +56,6 @@ export class WheelieBabes {
     map: L.Map;
     mapOptions: object;
     fuse: Fuse<ContentItem[]>;
-    lightbox: GLightbox;
 
     constructor(public content: AllContent) {
         this.content = content;
@@ -67,13 +65,12 @@ export class WheelieBabes {
         this.paginationWrapper = document.querySelector(".pagination-wrapper");
         this.contentList = this.navWrapper?.querySelector("ol");
         this.currentPage = 1;
-        this.lightbox = GLightbox();
 
         this.populateNav();
 
-        const initialDay = new URLSearchParams(window.location.search).get(
-            "day"
-        );
+        const initialDay: string | null = new URLSearchParams(
+            window.location.search
+        ).get("day");
 
         if (initialDay) {
             this.updateContent(initialDay);
@@ -152,6 +149,8 @@ export class WheelieBabes {
     }
 
     populateNav(contents: ContentItem[] | null = null): void {
+        const pageLength: number = 10;
+
         if (this.contentList) {
             this.contentList.innerHTML = "";
         }
@@ -160,10 +159,26 @@ export class WheelieBabes {
             contents = Object.values(this.content);
         }
 
+        const activeDay: string | null = new URLSearchParams(
+            window.location.search
+        ).get("day");
+
+        const currentDayIndex: number = activeDay
+            ? contents
+                  .map((content: ContentItem) => content.fields.day_number)
+                  .indexOf(activeDay)
+            : -1;
+
+        if (currentDayIndex !== -1) {
+            this.currentPage = Math.ceil(currentDayIndex / pageLength);
+        } else {
+            this.currentPage = 1;
+        }
+
         const paginate: Paginate = this.paginate(
             contents.length,
             this.currentPage,
-            10,
+            pageLength,
             999
         );
 
@@ -201,6 +216,7 @@ export class WheelieBabes {
                 <h4>Day ${content.fields.day_number}</h4>
                 <h5>${content.fields.locations.start} to ${content.fields.locations.end}</h5>
                 </li>
+                <hr style="${i >= startIndex && i < endIndex ? "" : "display:none;"}"/>
             `
                 );
 
@@ -212,31 +228,31 @@ export class WheelieBabes {
                     });
             }
         });
+
+        if (activeDay) {
+            this.highlightActiveDayNav(activeDay);
+        }
     }
 
     addSearchListener(): void {
-        const searchBtn = this.searchWrapper?.querySelector("button#search");
-        const clearBtn = this.searchWrapper?.querySelector("button#clear");
         const input = this.searchWrapper?.querySelector("input");
 
-        searchBtn?.addEventListener("click", () => {
-            const result: Fuse.FuseResult<ContentItem>[] = this.fuse.search(
-                input?.value
-            );
-            const contents: ContentItem[] = Object.values(result).map(
-                (item) => item.item
-            );
+        input?.addEventListener("input", (e: Event) => {
+            const target = e.target as HTMLInputElement;
 
-            this.currentPage = 1;
-            this.populateNav(contents);
-        });
+            if (target.value === "") {
+                this.populateNav(Object.values(this.content));
+            } else {
+                const result: Fuse.FuseResult<ContentItem>[] = this.fuse.search(
+                    target.value
+                );
+                const contents: ContentItem[] = Object.values(result).map(
+                    (item) => item.item
+                );
 
-        clearBtn?.addEventListener("click", () => {
-            if (input?.hasOwnProperty("value")) {
-                input.value = "";
+                this.currentPage = 1;
+                this.populateNav(contents);
             }
-
-            this.populateNav(Object.values(this.content));
         });
     }
 
@@ -282,7 +298,7 @@ export class WheelieBabes {
             });
         }
 
-        this.lightbox.reload();
+        lightbox.reload();
     }
 
     /******************************************************
@@ -363,7 +379,7 @@ export class WheelieBabes {
         currentPage = 1,
         pageSize = 10,
         maxPages = 10
-    ) {
+    ): Paginate {
         // calculate total pages
         let totalPages = Math.ceil(totalItems / pageSize);
 

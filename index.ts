@@ -148,7 +148,10 @@ export class WheelieBabes {
         }
     }
 
-    populateNav(contents: ContentItem[] | null = null): void {
+    populateNav(
+        contents: ContentItem[] | null = null,
+        page: number | null = null
+    ): void {
         const pageLength: number = 10;
 
         if (this.contentList) {
@@ -163,17 +166,7 @@ export class WheelieBabes {
             window.location.search
         ).get("day");
 
-        const currentDayIndex: number = activeDay
-            ? contents
-                  .map((content: ContentItem) => content.fields.day_number)
-                  .indexOf(activeDay)
-            : -1;
-
-        if (currentDayIndex !== -1) {
-            this.currentPage = Math.ceil(currentDayIndex / pageLength);
-        } else {
-            this.currentPage = 1;
-        }
+        this.setCurrentPage(page, contents, activeDay, pageLength);
 
         const paginate: Paginate = this.paginate(
             contents.length,
@@ -184,9 +177,41 @@ export class WheelieBabes {
 
         const { endIndex, startIndex, pages } = paginate;
 
-        /**
-         * Build pagination.
-         */
+        this.buildPaginationMarkup(contents, pages);
+
+        this.buildNavigationMarkup(contents, startIndex, endIndex);
+
+        if (activeDay) {
+            this.highlightActiveDayNav(activeDay);
+        }
+    }
+
+    setCurrentPage(
+        page: number | null,
+        contents: ContentItem[],
+        activeDay: string | null,
+        pageLength: number
+    ): void {
+        if (page === null) {
+            const currentDayIndex: number = activeDay
+                ? contents
+                      .map((content: ContentItem) => content.fields.day_number)
+                      .indexOf(activeDay)
+                : -1;
+
+            if (currentDayIndex !== -1) {
+                this.currentPage = Math.ceil(
+                    (currentDayIndex + 1) / pageLength
+                );
+            } else {
+                this.currentPage = 1;
+            }
+        } else {
+            this.currentPage = page;
+        }
+    }
+
+    buildPaginationMarkup(contents: ContentItem[], pages: number[]): void {
         if (this.paginationWrapper) {
             this.paginationWrapper.innerHTML = "";
             pages.forEach((page: number) => {
@@ -199,14 +224,17 @@ export class WheelieBabes {
                     .getElementById(`page-${page}`)
                     ?.addEventListener("click", () => {
                         this.currentPage = page;
-                        this.populateNav(contents);
+                        this.populateNav(contents, page);
                     });
             });
         }
+    }
 
-        /**
-         * Build navigation tabs.
-         */
+    buildNavigationMarkup(
+        contents: ContentItem[],
+        startIndex: number,
+        endIndex: number
+    ): void {
         contents.forEach((content: ContentItem, i: number) => {
             if (this.contentList) {
                 this.contentList.insertAdjacentHTML(
@@ -228,10 +256,6 @@ export class WheelieBabes {
                     });
             }
         });
-
-        if (activeDay) {
-            this.highlightActiveDayNav(activeDay);
-        }
     }
 
     addSearchListener(): void {

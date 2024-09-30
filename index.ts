@@ -1,4 +1,4 @@
-import Fuse from "./node_modules/fuse.js/dist/fuse.js";
+import Fuse from "fuse.js";
 
 const env: string | undefined = process.env.NODE_ENV;
 

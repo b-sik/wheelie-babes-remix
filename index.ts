@@ -1,4 +1,6 @@
-import Fuse from "fuse.js";
+import Fuse from "./node_modules/fuse.js/dist/fuse.js";
+
+const env: string | undefined = process.env.NODE_ENV;
 
 interface Paginate {
     totalItems: number;
@@ -332,7 +334,11 @@ export class WheelieBabes {
      *****************************************************/
 
     getTracks(): void {
-        fetch("https://127.0.0.1:5000/tracks")
+        fetch(
+            env === "development"
+                ? process.env.DEV_BE + "/tracks"
+                : process.env.PROD_BE + "/tracks"
+        )
             .then((res) => (res.ok ? res.json() : false))
             .then((res) => {
                 res.forEach((track: string) => {
@@ -462,7 +468,11 @@ export class WheelieBabes {
     }
 }
 
-fetch("https://127.0.0.1:5000/content")
+fetch(
+    env === "development"
+        ? process.env.DEV_BE + "/content"
+        : process.env.PROD_BE + "/content"
+)
     .then((res) => (res.ok ? res.json() : false))
     .then((res) => {
         new WheelieBabes(res);

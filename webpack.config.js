@@ -1,7 +1,8 @@
 const path = require("path");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = {
-    mode: "development", // Use 'production' for minified output
+    mode: process.env.NODE_ENV || "development", // Use 'production' for minified output
     entry: "./index.ts", // Your entry file
     module: {
         rules: [
@@ -17,7 +18,8 @@ module.exports = {
     },
     output: {
         filename: "index.js", // Output file name
-        path: path.resolve(__dirname), // Output directory
+        path: path.resolve(__dirname) + "/static", // Output directory
     },
     devtool: "source-map", // Enable source maps for easier debugging
+    plugins: [new Dotenv()],
 };

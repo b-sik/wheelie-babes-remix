@@ -35,8 +35,17 @@ def get_tracks():
       filelist = []
       if isinstance(static_folder, str):
           for f in os.listdir(static_folder + '/gpx'):
-              filelist.append(os.getenv('DEV_BE') + '/gpx/' +
+              env = os.getenv('NODE_ENV')
+              if env == 'production':
+                  be = os.getenv('PROD_BE')
+                  if isinstance(be, str):
+                      filelist.append(be + '/gpx/' + f.rsplit(".", 1)[0])
+              elif env == 'development':
+                  be = os.getenv('DEV_BE')
+                  if isinstance(be, str):
+                      filelist.append(be + '/gpx/' +
                             f.rsplit(".", 1)[0])
+
           filelist.sort()
           return jsonify(filelist)
 

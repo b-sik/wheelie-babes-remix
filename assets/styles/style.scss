@@ -2,10 +2,10 @@
 
 @font-face {
     font-family: "Racing Sans One";
-    src: url("assets/fonts/RacingSansOne-Regular.woff");
+    src: url("fonts/RacingSansOne-Regular.woff");
     src:
-        url("assets/fonts/RacingSansOne-Regular.woff") format("woff"),
-        url("assets/fonts/RacingSansOne-Regular.ttf") format("ttf");
+        url("fonts/RacingSansOne-Regular.woff") format("woff"),
+        url("fonts/RacingSansOne-Regular.ttf") format("ttf");
 }
 
 @mixin phone-only {

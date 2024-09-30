@@ -36,14 +36,12 @@ def get_tracks():
       if isinstance(static_folder, str):
           for f in os.listdir(static_folder + '/gpx'):
               env = os.getenv('NODE_ENV')
-              if env == 'production':
-                  be = os.getenv('PROD_BE')
-                  if isinstance(be, str):
-                      filelist.append(be + '/gpx/' + f.rsplit(".", 1)[0])
-              elif env == 'development':
+              if env == 'development':
                   be = os.getenv('DEV_BE')
                   if isinstance(be, str):
-                      filelist.append(be + '/gpx/' +
+                      filelist.append(be + '/gpx/' + f.rsplit(".", 1)[0])
+              else:
+                  filelist.append('https://wheelie-babes.bsik.net/gpx/' +
                             f.rsplit(".", 1)[0])
 
           filelist.sort()

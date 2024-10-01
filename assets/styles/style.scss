@@ -40,6 +40,12 @@
     --white: #edece2;
 }
 
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: InterVariable, sans-serif;
+    }
+}
+
 html {
     margin: 0;
     padding: 0;
@@ -49,6 +55,10 @@ body {
     color: var(--white);
     background-color: var(--secondary-color);
     width: 100%;
+    font-family: Inter, sans-serif;
+    font-feature-settings:
+        "liga" 1,
+        "calt" 1; /* fix for Chrome */
 }
 
 main {
@@ -203,14 +213,22 @@ main {
     article {
         padding: 0 1rem;
 
-        h2:first-of-type {
+        h1 {
+            margin: 0;
+        }
+
+        h2 {
             margin-top: 0;
-            font-size: 2rem;
+            font-size: medium;
+        }
+
+        hr {
+            height: 3px;
         }
 
         blockquote {
-            background: #f9f9f9;
-            border-left: 10px solid #ccc;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 10px solid rgba(0, 0, 0, 0.35);
             margin: 1.5em 10px;
             padding: 0.5em 10px;
 

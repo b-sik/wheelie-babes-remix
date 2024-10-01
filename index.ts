@@ -14,7 +14,7 @@ interface Paginate {
     pages: number[];
 }
 
-interface MilesAndElevations {
+interface MilesAndElevation {
     elevation_gain: string;
     elevation_loss: string;
     flats: string;
@@ -32,8 +32,8 @@ interface Fields {
     date: string;
     day_number: string;
     locations: Locations;
-    miles_and_elevations: MilesAndElevations;
-    wearther: string;
+    miles_and_elevation: MilesAndElevation;
+    weather: string;
 }
 
 interface ContentItem {
@@ -85,15 +85,15 @@ export class WheelieBabes {
         /*
          * Map setup.
          */
-        this.map = L.map("map").setView([39, -97.5], 4);
-
         this.mapOptions = {
             async: true,
-            marker_options: {
-                startIconUrl: undefined,
-                endIconUrl: undefined,
+            markers: {
+                startIcon: null,
+                endIcon: null,
             },
         };
+
+        this.map = L.map("map", this.mapOptions).setView([39, -97.5], 4);
 
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -126,10 +126,55 @@ export class WheelieBabes {
     }
 
     updateContent(day: string | number): void {
-        const content: ContentItem = this.content[Number(day)];
+        const contentItem: ContentItem = this.content[Number(day)];
 
         if (this.contentWrapper) {
-            this.contentWrapper.innerHTML = `<h2>${content.title}</h2>${content.content}`;
+            const { title, content, fields } = contentItem;
+
+            const {
+                miles_and_elevation: {
+                    elevation_gain,
+                    elevation_loss,
+                    flats,
+                    miles,
+                    rest_day,
+                },
+                locations: { end, single, start },
+                weather,
+            } = fields;
+
+            const km = Math.floor(Number(miles) * 1.609344);
+            const meters = (feet: number) => Math.floor(feet * 0.3048);
+
+            const headings: string[] = title
+                .split("&#8211;")
+                .map((heading: string) => heading.trim());
+
+            let stats = "";
+
+            if (rest_day) {
+                stats = `<h3>Rest Day 😴</h3>`;
+            } else {
+                stats = `
+                <table>
+                <tr><td>Distance: </td><td>${miles} mi</td><td>${km} km</td></tr>
+                <tr><td>Elevation gain: </td><td>${elevation_gain} ft</td>
+                  <td>${meters(Number(elevation_gain))} m</td></tr>
+                <tr><td>Elevation loss: </td><td>${elevation_loss} ft</td>
+                  <td>${meters(Number(elevation_loss))} m</td></tr>
+                <tr><td>Flat tires: </td><td>${flats === "" ? "0" : flats}</td></tr>
+                </table>
+                `;
+            }
+
+            this.contentWrapper.innerHTML = `
+            <h1>${headings[0]}</h1>
+            <h2>${headings[1]}</h2>
+            ${stats}
+            <hr />
+            ${content}
+
+            `;
         }
 
         this.reloadLightbox();
@@ -347,13 +392,13 @@ export class WheelieBabes {
             });
     }
 
-    addTrack(track: string): void {
+    addTrack = (track: string) => {
         const day: string[] = track.split("/");
-        const dayNum: string = day[day.length - 1].split(".")[0];
+        const dayNum: string = day[day.length - 1];
 
-        const gpxLayer = new L.GPX(track, this.mapOptions);
+        //const gpxLayer = new L.GPX(track, this.mapOptions);
 
-        gpxLayer
+        new L.GPX(track, this.mapOptions)
             .on("loaded", (e: L.LeafletEvent) => {
                 const segment = e.target;
                 const geoJSONSegment = segment.toGeoJSON();
@@ -368,12 +413,13 @@ export class WheelieBabes {
                     coordinates[coordinates.length - 1];
 
                 L.marker(end)
-                    .bindTooltip(this.toolTipMarkupEnd(segment, track))
                     .on("click", () => {
+                        console.log("clicked!!");
                         this.setDay(dayNum);
                         this.updateContent(dayNum);
                     })
-                    .addTo(this.map);
+                    .addTo(this.map)
+                    .bindTooltip(this.toolTipMarkupEnd(segment, track));
 
                 if (dayNum === "1") {
                     L.marker(start)
@@ -386,7 +432,7 @@ export class WheelieBabes {
                 }
             })
             .addTo(this.map);
-    }
+    };
 
     toolTipMarkupStart(segment: any, track: string): string {
         return `📍<code>${segment.get_name().substring(0, 31)}<br />

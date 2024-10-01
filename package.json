@@ -34,7 +34,7 @@
     "scripts": {
         "build": "yarn compile:css && webpack",
         "dev": "yarn watch:css & webpack --watch",
-        "start": "browser-sync start --proxy 'https://wheelie-babes-remix.test/' --files './static/*.*",
+        "start": "browser-sync start --proxy 'https://127.0.0.1:5000/' --files './static/*.*'",
         "watch:css": "sass --watch --update --style=expanded ./assets/styles:./static",
         "watch:ts": "webpack --watch",
         "compile:css": "sass --no-source-map --style=compressed ./assets/styles:./static",

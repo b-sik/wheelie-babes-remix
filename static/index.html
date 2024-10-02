@@ -47,7 +47,7 @@
             const lightbox = GLightbox();
         </script>
 
-        <title>Wheelie Babes Remix</title>
+        <title>Wheelie Babes</title>
     </head>
     <body>
         <header>
@@ -66,13 +66,15 @@
 
         <main>
             <nav>
-                <h1>Trip Log</h1>
-                <form class="search-wrapper">
-                    <input type="search" placeholder="Search..." />
-                    <button id="search" type="submit">Search</button>
-                </form>
-                <ol></ol>
-                <div class="pagination-wrapper"></div>
+                <details id="nav-details" open>
+                    <summary><h1>Trip Log</h1></summary>
+                    <form class="search-wrapper">
+                        <input type="search" placeholder="Search..." />
+                        <button id="search" type="submit">Search</button>
+                    </form>
+                    <ol></ol>
+                    <div class="pagination-wrapper"></div>
+                </details>
             </nav>
 
             <article></article>

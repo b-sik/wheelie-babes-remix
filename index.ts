@@ -95,6 +95,7 @@ export class WheelieBabes {
         this.contentList = this.navWrapper?.querySelector("ol");
         this.currentPage = 1;
 
+        this.closeTripLog();
         this.populateNav();
 
         const initialDay: string | null = new URLSearchParams(
@@ -126,19 +127,19 @@ export class WheelieBabes {
         this.currentMarker = null;
         this.currentSegment = null;
 
-        this.blueMarker = L.icon({
-            iconUrl: "blue-pin.png",
-            iconSize: [30, 30],
-            iconAnchor: [12, 27],
-            tooltipAnchor: [10, -24],
-        });
+        //this.blueMarker = L.icon({
+        //iconUrl: "blue-pin.png",
+        //iconSize: [30, 30],
+        //iconAnchor: [12, 27],
+        //tooltipAnchor: [10, -24],
+        //});
 
-        this.redMarker = L.icon({
-            iconUrl: "red-pin.png",
-            iconSize: [30, 30],
-            iconAnchor: [12, 27],
-            tooltipAnchor: [10, -24],
-        });
+        //this.redMarker = L.icon({
+        //iconUrl: "red-pin.png",
+        //iconSize: [30, 30],
+        //iconAnchor: [12, 27],
+        //tooltipAnchor: [10, -24],
+        //});
 
         this.map = L.map("map", this.mapOptions).setView([39, -97.5], 4);
 
@@ -160,6 +161,13 @@ export class WheelieBabes {
         this.fuse = new Fuse(Object.values(this.content), searchOptions);
 
         this.addSearchListener();
+    }
+
+    closeTripLog(): void {
+        const detailsEl = document.getElementById("nav-details");
+        if (detailsEl && this.mediaQueries["phone-only"]) {
+            detailsEl.removeAttribute("open");
+        }
     }
 
     /*
@@ -517,7 +525,7 @@ export class WheelieBabes {
 
                 const marker = L.marker(start)
                     .bindTooltip(this.toolTipMarkup(track))
-                    .setIcon(this.blueMarker)
+                    //.setIcon(this.blueMarker)
                     .on("click", () => {
                         this.setDay(dayNum);
                         this.updateContent(dayNum);
@@ -533,7 +541,7 @@ export class WheelieBabes {
     };
 
     updateNewTrack(segment: L.Polyline, marker: L.Marker): void {
-        marker.setIcon(this.redMarker);
+        //marker.setIcon(this.redMarker);
         segment.setStyle({ color: "red" });
         this.map.fitBounds(segment.getBounds());
 
@@ -543,7 +551,7 @@ export class WheelieBabes {
 
     resetCurrentTrack(): void {
         if (this.currentMarker && this.currentSegment) {
-            this.currentMarker.setIcon(this.blueMarker);
+            //this.currentMarker.setIcon(this.blueMarker);
             this.currentSegment.setStyle({ color: "blue" });
         }
     }

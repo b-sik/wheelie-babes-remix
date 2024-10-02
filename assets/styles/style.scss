@@ -104,20 +104,16 @@ img {
 
 #map {
     height: 400px;
-    margin: 0 6rem;
+    margin: 0 1rem;
 
-    @include phone-only() {
-        margin: 0 1rem;
+    @include tablet-landscape() {
+        margin: 0 3rem;
     }
-    @include tablet-portrait() {
-        margin: 0 1rem;
+    @include desktop() {
+        margin: 0 6rem;
     }
 
     .leaflet-tooltip {
-        .active-tooltip {
-            background-color: yellow;
-        }
-
         h1 {
             color: var(--white);
             background-image: none;
@@ -133,7 +129,22 @@ img {
         }
 
         table {
-            margin: 0;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-spacing: 0;
+            margin: 0.25rem 0 0 0;
+            text-align: left;
+
+            tr {
+                border: none;
+
+                &:nth-of-type(odd) {
+                    background-color: rgba(0, 0, 0, 0.2);
+                }
+
+                td {
+                    padding-left: 0.25rem;
+                }
+            }
         }
     }
 }
@@ -157,12 +168,20 @@ main {
         border-left: 2px solid rgba(0, 0, 0, 0.4);
         padding: 0.5rem 1rem;
 
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+
         @include tablet-landscape() {
             min-width: 250px;
             margin-right: 2rem;
         }
 
         h1 {
+            cursor: pointer;
             background: linear-gradient(15deg, #26b1b1, #e087ed 80%);
             font-size: 1.2rem;
             padding: 0.5rem;
@@ -170,6 +189,14 @@ main {
             border-radius: 15px;
             border: 1px solid var(--white);
             text-align: center;
+
+            &:hover {
+                border-color: black;
+            }
+
+            &:active {
+                transform: translateY(2px);
+            }
         }
 
         // https://nikitahl.com/search-icon-inside-input
@@ -299,6 +326,27 @@ main {
 
             .weather-emoji {
                 font-size: large;
+            }
+        }
+
+        table {
+            width: 100%;
+
+            @include desktop() {
+                width: 75%;
+            }
+
+            tr {
+                &:nth-of-type(odd) {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+
+                td {
+                    padding-left: 0.5rem;
+                    @include desktop() {
+                        width: 25%;
+                    }
+                }
             }
         }
 

@@ -48,6 +48,15 @@ interface AllContent {
     [key: number]: ContentItem;
 }
 
+interface SegmentAndMarker {
+    segment: L.Polyline;
+    marker: L.Marker;
+}
+
+interface SegmentsAndMarkers {
+    [key: number]: SegmentAndMarker;
+}
+
 export class WheelieBabes {
     contentWrapper: HTMLElement | null;
     navWrapper: HTMLElement | null;
@@ -57,6 +66,11 @@ export class WheelieBabes {
     currentPage: number;
     map: L.Map;
     mapOptions: object;
+    redMarker: L.Icon;
+    blueMarker: L.Icon;
+    segmentsAndMarkers: SegmentsAndMarkers;
+    currentMarker: L.Marker | null;
+    currentSegment: L.Polyline | null;
     fuse: Fuse<ContentItem[]>;
 
     constructor(public content: AllContent) {
@@ -92,6 +106,26 @@ export class WheelieBabes {
                 endIcon: null,
             },
         };
+
+        this.segmentsAndMarkers = {};
+
+        // keep track of active marker and active.
+        this.currentMarker = null;
+        this.currentSegment = null;
+
+        this.blueMarker = L.icon({
+            iconUrl: "blue-pin.png",
+            iconSize: [30, 30],
+            iconAnchor: [12, 27],
+            tooltipAnchor: [10, -24],
+        });
+
+        this.redMarker = L.icon({
+            iconUrl: "red-pin.png",
+            iconSize: [30, 30],
+            iconAnchor: [12, 27],
+            tooltipAnchor: [10, -24],
+        });
 
         this.map = L.map("map", this.mapOptions).setView([39, -97.5], 4);
 
@@ -132,30 +166,61 @@ export class WheelieBabes {
             const { title, content, fields } = contentItem;
 
             const {
-                miles_and_elevation: {
-                    elevation_gain,
-                    elevation_loss,
-                    flats,
-                    miles,
-                    rest_day,
-                },
+                miles_and_elevation,
                 locations: { end, single, start },
                 weather,
             } = fields;
 
-            const km = Math.floor(Number(miles) * 1.609344);
-            const meters = (feet: number) => Math.floor(feet * 0.3048);
-
-            const headings: string[] = title
-                .split("&#8211;")
-                .map((heading: string) => heading.trim());
-
             let stats = "";
 
-            if (rest_day) {
+            if (miles_and_elevation.rest_day) {
                 stats = `<h3>Rest Day 😴</h3>`;
             } else {
-                stats = `
+                stats = this.getStats(miles_and_elevation);
+            }
+
+            const headings: string = this.getHeadings(title);
+
+            this.contentWrapper.innerHTML = `
+            ${headings}
+            ${stats}
+            <hr />
+            ${content}
+
+            `;
+        }
+
+        this.reloadLightbox();
+    }
+
+    getHeadings(title: string): string {
+        const headings = title
+            .split("&#8211;")
+            .map((heading: string) => heading.trim());
+
+        let subheadings: string[] = [];
+
+        if (headings[1]) {
+            subheadings = headings[1].split(" to ");
+        }
+
+        return `
+        <h1>${headings[0]}</h1>
+        ${
+            subheadings.length > 0
+                ? `<h2><span>${subheadings[0]}</span><span> to ${subheadings[1]}</span></h2>`
+                : null
+        }
+        `;
+    }
+
+    getStats(stats: MilesAndElevation): string {
+        const { elevation_loss, elevation_gain, flats, miles } = stats;
+
+        const km = Math.floor(Number(miles) * 1.609344);
+        const meters = (feet: number) => Math.floor(feet * 0.3048);
+
+        return `
                 <table>
                 <tr><td>Distance: </td><td>${miles} mi</td><td>${km} km</td></tr>
                 <tr><td>Elevation gain: </td><td>${elevation_gain} ft</td>
@@ -165,19 +230,6 @@ export class WheelieBabes {
                 <tr><td>Flat tires: </td><td>${flats === "" ? "0" : flats}</td></tr>
                 </table>
                 `;
-            }
-
-            this.contentWrapper.innerHTML = `
-            <h1>${headings[0]}</h1>
-            <h2>${headings[1]}</h2>
-            ${stats}
-            <hr />
-            ${content}
-
-            `;
-        }
-
-        this.reloadLightbox();
     }
 
     highlightActiveDayNav(day: string | number): void {
@@ -199,7 +251,7 @@ export class WheelieBabes {
         contents: ContentItem[] | null = null,
         page: number | null = null
     ): void {
-        const pageLength: number = 10;
+        const pageLength: number = 20;
 
         if (this.contentList) {
             this.contentList.innerHTML = "";
@@ -300,6 +352,18 @@ export class WheelieBabes {
                     ?.addEventListener("click", () => {
                         this.updateContent(content.fields.day_number);
                         this.setDay(content.fields.day_number);
+
+                        const currentTrack: SegmentAndMarker | undefined =
+                            this.segmentsAndMarkers[
+                                Number(content.fields.day_number)
+                            ];
+
+                        if (currentTrack) {
+                            this.updateActiveTrack(
+                                currentTrack.segment,
+                                currentTrack.marker
+                            );
+                        }
                     });
             }
         });
@@ -396,55 +460,68 @@ export class WheelieBabes {
         const day: string[] = track.split("/");
         const dayNum: string = day[day.length - 1];
 
-        //const gpxLayer = new L.GPX(track, this.mapOptions);
-
         new L.GPX(track, this.mapOptions)
             .on("loaded", (e: L.LeafletEvent) => {
                 const segment = e.target;
                 const geoJSONSegment = segment.toGeoJSON();
 
-                // coords need to be reversed.
                 const coordinates: [number, number][] =
-                    geoJSONSegment.features[0].geometry.coordinates.map(
-                        (coord: [number, number]) => [coord[1], coord[0]]
-                    );
-                const start: [number, number] = coordinates[0];
-                const end: [number, number] =
-                    coordinates[coordinates.length - 1];
+                    geoJSONSegment.features[0].geometry.coordinates;
 
-                L.marker(end)
+                // coords need to be reversed.
+                const start: [number, number] = [
+                    coordinates[0][1],
+                    coordinates[0][0],
+                ];
+
+                const marker = L.marker(start)
+                    .bindTooltip(this.toolTipMarkup(track))
+                    .setIcon(this.blueMarker)
                     .on("click", () => {
-                        console.log("clicked!!");
                         this.setDay(dayNum);
                         this.updateContent(dayNum);
-                    })
-                    .addTo(this.map)
-                    .bindTooltip(this.toolTipMarkupEnd(segment, track));
+                        this.populateNav();
 
-                if (dayNum === "1") {
-                    L.marker(start)
-                        .bindTooltip(this.toolTipMarkupStart(segment, track))
-                        .on("click", () => {
-                            this.setDay(dayNum);
-                            this.updateContent(dayNum);
-                        })
-                        .addTo(this.map);
-                }
+                        this.updateActiveTrack(segment, marker);
+                    })
+                    .addTo(this.map);
+
+                this.segmentsAndMarkers[Number(dayNum)] = { segment, marker };
             })
             .addTo(this.map);
     };
 
-    toolTipMarkupStart(segment: any, track: string): string {
-        return `📍<code>${segment.get_name().substring(0, 31)}<br />
-                    <- ${track}<br />
-                    ${segment.get_distance_imp().toFixed(2)} miles</code>`;
+    updateNewTrack(segment: L.Polyline, marker: L.Marker): void {
+        marker.setIcon(this.redMarker);
+        segment.setStyle({ color: "red" });
+        this.map.fitBounds(segment.getBounds());
+
+        this.currentMarker = marker;
+        this.currentSegment = segment;
     }
 
-    toolTipMarkupEnd(segment: any, track: string): string {
-        return `📍<code>${segment.get_name().substring(0, 31)}<br />
-                    -> ${track}<br />
-                    ${segment.get_distance_imp().toFixed(2)} miles<br />
-                    <- ${track}</code>`;
+    resetCurrentTrack(): void {
+        if (this.currentMarker && this.currentSegment) {
+            this.currentMarker.setIcon(this.blueMarker);
+            this.currentSegment.setStyle({ color: "blue" });
+        }
+    }
+
+    updateActiveTrack(segment: L.Polyline, marker: L.Marker): void {
+        this.resetCurrentTrack();
+        this.updateNewTrack(segment, marker);
+    }
+
+    toolTipMarkup(track: string): string {
+        const day: string[] = track.split("/");
+        const day_num: number = Number(day[day.length - 1]);
+
+        const content: ContentItem = this.content[day_num];
+
+        return (
+            this.getHeadings(content.title) +
+            this.getStats(content.fields.miles_and_elevation)
+        );
     }
 
     /**

@@ -57,7 +57,12 @@ interface SegmentsAndMarkers {
     [key: number]: SegmentAndMarker;
 }
 
+interface MediaQueries {
+    [key: string]: Boolean;
+}
+
 export class WheelieBabes {
+    mediaQueries: MediaQueries;
     contentWrapper: HTMLElement | null;
     navWrapper: HTMLElement | null;
     searchWrapper: HTMLDivElement | null;
@@ -74,6 +79,14 @@ export class WheelieBabes {
     fuse: Fuse<ContentItem[]>;
 
     constructor(public content: AllContent) {
+        this.mediaQueries = {
+            "phone-only": window.matchMedia("(max-width: 599px)").matches,
+            "tablet-portrait": window.matchMedia("(min-width: 600px)").matches,
+            "tablet-landscape": window.matchMedia("(min-width: 900px)").matches,
+            desktop: window.matchMedia("(min-width: 1200px)").matches,
+            "big-desktop": window.matchMedia("(min-width: 1800px)").matches,
+        };
+
         this.content = content;
         this.contentWrapper = document.querySelector("article");
         this.navWrapper = document.querySelector("nav");
@@ -264,7 +277,9 @@ export class WheelieBabes {
         contents: ContentItem[] | null = null,
         page: number | null = null
     ): void {
-        const pageLength: number = 20;
+        const pageLength: number = this.mediaQueries["tablet-landscape"]
+            ? 20
+            : 7;
 
         if (this.contentList) {
             this.contentList.innerHTML = "";
@@ -363,6 +378,12 @@ export class WheelieBabes {
                 document
                     .getElementById(`day-${content.fields.day_number}`)
                     ?.addEventListener("click", () => {
+                        const mapEl = document.getElementById("map");
+                        mapEl?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                        });
+
                         this.updateContent(content.fields.day_number);
                         this.setDay(content.fields.day_number);
 
@@ -384,6 +405,13 @@ export class WheelieBabes {
 
     addSearchListener(): void {
         const input = this.searchWrapper?.querySelector("input");
+        const searchIcon = this.searchWrapper?.querySelector("#search");
+
+        if (searchIcon) {
+            searchIcon.addEventListener("click", (e: Event) => {
+                e.preventDefault();
+            });
+        }
 
         input?.addEventListener("input", (e: Event) => {
             const target = e.target as HTMLInputElement;

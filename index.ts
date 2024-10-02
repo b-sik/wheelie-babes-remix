@@ -71,8 +71,8 @@ export class WheelieBabes {
     currentPage: number;
     map: L.Map;
     mapOptions: object;
-    redMarker: L.Icon;
-    blueMarker: L.Icon;
+    //redMarker: L.Icon;
+    //blueMarker: L.Icon;
     segmentsAndMarkers: SegmentsAndMarkers;
     currentMarker: L.Marker | null;
     currentSegment: L.Polyline | null;
@@ -195,7 +195,10 @@ export class WheelieBabes {
                 stats = this.getStats(miles_and_elevation);
             }
 
-            const headings: string = this.getHeadings(title);
+            const headings: string = this.getHeadings(
+                title,
+                miles_and_elevation.rest_day
+            );
 
             this.contentWrapper.innerHTML = `
             ${headings}
@@ -227,14 +230,15 @@ export class WheelieBabes {
 
         return "";
     }
-    getHeadings(title: string): string {
+
+    getHeadings(title: string, restDay: boolean): string {
         const headings = title
             .split("&#8211;")
             .map((heading: string) => heading.trim());
 
         let subheadings: string[] = [];
 
-        if (headings[1]) {
+        if (!restDay && headings[1]) {
             subheadings = headings[1].split(" to ");
         }
 
@@ -243,7 +247,7 @@ export class WheelieBabes {
         ${
             subheadings.length > 0
                 ? `<h2><span>${subheadings[0]}</span><span> to ${subheadings[1]}</span></h2>`
-                : null
+                : `<h2>${headings[1]}</h2>`
         }
         `;
     }
@@ -371,20 +375,24 @@ export class WheelieBabes {
         endIndex: number
     ): void {
         contents.forEach((content: ContentItem, i: number) => {
+            const {
+                fields: { day_number, locations },
+            } = content;
+
             if (this.contentList) {
                 this.contentList.insertAdjacentHTML(
                     "beforeend",
                     `
-                <li role="button" id="day-${content.fields.day_number}" style="${i >= startIndex && i <= endIndex ? "" : "display:none;"}"> 
-                <h4>Day ${content.fields.day_number}</h4>
-                <h5>${content.fields.locations.start} to ${content.fields.locations.end}</h5>
+                <li role="button" id="day-${day_number}" style="${i >= startIndex && i <= endIndex ? "" : "display:none;"}"> 
+                <h4>Day ${day_number}</h4>
+                <h5>${locations.single ? locations.start : locations.start + " to " + locations.end}</h5>
                 </li>
                 <hr style="${i >= startIndex && i < endIndex ? "" : "display:none;"}"/>
             `
                 );
 
                 document
-                    .getElementById(`day-${content.fields.day_number}`)
+                    .getElementById(`day-${day_number}`)
                     ?.addEventListener("click", () => {
                         const mapEl = document.getElementById("map");
                         mapEl?.scrollIntoView({
@@ -392,13 +400,11 @@ export class WheelieBabes {
                             block: "start",
                         });
 
-                        this.updateContent(content.fields.day_number);
-                        this.setDay(content.fields.day_number);
+                        this.updateContent(day_number);
+                        this.setDay(day_number);
 
                         const currentTrack: SegmentAndMarker | undefined =
-                            this.segmentsAndMarkers[
-                                Number(content.fields.day_number)
-                            ];
+                            this.segmentsAndMarkers[Number(day_number)];
 
                         if (currentTrack) {
                             this.updateActiveTrack(

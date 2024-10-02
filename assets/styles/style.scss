@@ -234,13 +234,25 @@ main {
     article {
         padding: 0 1rem;
 
-        h1 {
+        h1:first-of-type {
             margin: 0;
         }
 
         h2 {
-            margin-top: 0;
+            &:first-of-type {
+                margin: 0;
+            }
+
             font-size: medium;
+        }
+
+        h3 {
+            font-size: small;
+            margin-top: 1px;
+
+            .weather-emoji {
+                font-size: large;
+            }
         }
 
         hr {

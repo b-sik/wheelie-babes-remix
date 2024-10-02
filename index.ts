@@ -164,12 +164,7 @@ export class WheelieBabes {
 
         if (this.contentWrapper) {
             const { title, content, fields } = contentItem;
-
-            const {
-                miles_and_elevation,
-                locations: { end, single, start },
-                weather,
-            } = fields;
+            const { miles_and_elevation, weather, date } = fields;
 
             let stats = "";
 
@@ -183,6 +178,7 @@ export class WheelieBabes {
 
             this.contentWrapper.innerHTML = `
             ${headings}
+            <h3><time datetime="${new Date(date)}">${contentItem.date}</time> | Weather: ${weather} <span class="weather-emoji">${this.getWeatherEmoji(weather)}</span></h3>
             ${stats}
             <hr />
             ${content}
@@ -193,6 +189,23 @@ export class WheelieBabes {
         this.reloadLightbox();
     }
 
+    getWeatherEmoji(str: string): string {
+        str = str.toLowerCase();
+
+        if (str.includes("sunny")) {
+            return "🌞";
+        } else if (str.includes("hot")) {
+            return "🥵";
+        } else if (str.includes("perfect")) {
+            return "👌";
+        } else if (str.includes("storm")) {
+            return "⛈️ ";
+        } else if (str.includes("cloudy")) {
+            return "☁️ ";
+        }
+
+        return "";
+    }
     getHeadings(title: string): string {
         const headings = title
             .split("&#8211;")

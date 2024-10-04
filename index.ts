@@ -575,7 +575,7 @@ export class WheelieBabes {
         const content: ContentItem = this.content[day_num];
 
         return (
-            this.getHeadings(content.title) +
+            this.getHeadings(content.title, false) +
             this.getStats(content.fields.miles_and_elevation)
         );
     }

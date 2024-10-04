@@ -455,14 +455,13 @@ export class WheelieBabes {
                 const nestedFigures =
                     figure.querySelectorAll(":scope > figure");
 
+                let media: HTMLImageElement | null = null;
+
                 if (nestedFigures) {
                     const mediaWrappers: HTMLAnchorElement[] = [];
 
                     nestedFigures.forEach((nestedFigure) => {
-                        const media:
-                            | HTMLImageElement
-                            | HTMLVideoElement
-                            | null = nestedFigure.querySelector("img, video");
+                        media = nestedFigure.querySelector("img");
 
                         if (media) {
                             const mediaWrapper: HTMLAnchorElement =
@@ -479,11 +478,13 @@ export class WheelieBabes {
                         }
                     });
 
-                    figure.innerHTML = "";
+                    if (media) {
+                        figure.innerHTML = "";
 
-                    mediaWrappers.forEach((wrapper) => {
-                        figure.append(wrapper);
-                    });
+                        mediaWrappers.forEach((wrapper) => {
+                            figure.append(wrapper);
+                        });
+                    }
                 }
             });
         }

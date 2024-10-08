@@ -291,7 +291,7 @@ export class WheelieBabes {
     ): void {
         const pageLength: number = this.mediaQueries["tablet-landscape"]
             ? 20
-            : 7;
+            : 10;
 
         if (this.contentList) {
             this.contentList.innerHTML = "";

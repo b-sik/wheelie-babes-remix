@@ -77,6 +77,18 @@ export class WheelieBabes {
     currentMarker: L.Marker | null;
     currentSegment: L.Polyline | null;
     fuse: Fuse<ContentItem[]>;
+    trackIndex: Record<
+        number,
+        {
+            id: number;
+            full: string;
+            start: [number, number] | null;
+            bounds: [[number, number], [number, number]];
+        }
+    >;
+    overviewLayer: L.GeoJSON | null;
+    activeTrackLayer: L.GeoJSON | null;
+    fullTrackCache: Map<number, any>;
 
     constructor(public content: AllContent) {
         this.mediaQueries = {
@@ -143,13 +155,21 @@ export class WheelieBabes {
 
         this.map = L.map("map", this.mapOptions).setView([39, -97.5], 4);
 
+        this.trackIndex = {};
+        this.overviewLayer = null;
+        this.activeTrackLayer = null;
+        this.fullTrackCache = new Map();
+
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
             attribution:
                 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(this.map);
 
-        this.getTracks();
+        // Helps with dense lines
+        (this.map as any).options.renderer = L.canvas();
+
+        this.initTracks().catch((e) => console.error("initTracks failed", e));
 
         /*
          * Search setup.
@@ -181,7 +201,11 @@ export class WheelieBabes {
     }
 
     updateContent(day: string | number): void {
-        const contentItem: ContentItem = this.content[Number(day)];
+        const contentItem = this.content[Number(day)];
+        if (!contentItem) {
+            console.error("No content for day", day);
+            return;
+        }
 
         if (this.contentWrapper) {
             const { title, content, fields } = contentItem;
@@ -403,14 +427,11 @@ export class WheelieBabes {
                         this.updateContent(day_number);
                         this.setDay(day_number);
 
-                        const currentTrack: SegmentAndMarker | undefined =
-                            this.segmentsAndMarkers[Number(day_number)];
-
-                        if (currentTrack) {
-                            this.updateActiveTrack(
-                                currentTrack.segment,
-                                currentTrack.marker
-                            );
+                        const dayNum = Number(day_number);
+                        const current = this.segmentsAndMarkers[dayNum];
+                        if (current) {
+                            // Ensure the full-detail track is loaded and shown
+                            this.showFullDayTrack(dayNum);
                         }
                     });
             }
@@ -498,54 +519,126 @@ export class WheelieBabes {
      *
      *****************************************************/
 
-    getTracks(): void {
-        fetch(
-            env === "development"
-                ? process.env.DEV_BE + "/tracks"
-                : process.env.PROD_BE + "/tracks"
-        )
-            .then((res) => (res.ok ? res.json() : false))
-            .then((res) => {
-                res.forEach((track: string) => {
-                    this.addTrack(track);
-                });
-            });
+    async initTracks(): Promise<void> {
+        // 1) whole-trip overview on load
+        await this.loadOverview();
+
+        // 2) markers/bounds index
+        await this.loadTrackIndexAndMarkers();
+
+        // Optional: if URL has ?day=, load that full track immediately
+        const initialDay: string | null = new URLSearchParams(
+            window.location.search
+        ).get("day");
+        const dayNum = initialDay ? Number(initialDay) : null;
+        if (dayNum && this.trackIndex[dayNum]) {
+            await this.showFullDayTrack(dayNum);
+        }
     }
 
-    addTrack = (track: string) => {
-        const day: string[] = track.split("/");
-        const dayNum: string = day[day.length - 1];
+    async loadOverview(): Promise<void> {
+        const overview = await fetch(
+            `${env === "development" ? process.env.DEV_BE : ""}/tracks/overview.geojson`
+        ).then((r) => r.json());
 
-        new L.GPX(track, this.mapOptions)
-            .on("loaded", (e: L.LeafletEvent) => {
-                const segment = e.target;
-                const geoJSONSegment = segment.toGeoJSON();
+        this.overviewLayer = L.geoJSON(overview, {
+            style: { color: "#2b6cb0", weight: 3, opacity: 0.7 },
+            interactive: false,
+        }).addTo(this.map);
 
-                const coordinates: [number, number][] =
-                    geoJSONSegment.features[0].geometry.coordinates;
+        // Fit to entire trip immediately
+        this.map.fitBounds(this.overviewLayer.getBounds(), {
+            padding: [10, 10],
+        });
+    }
 
-                // coords need to be reversed.
-                const start: [number, number] = [
-                    coordinates[0][1],
-                    coordinates[0][0],
-                ];
+    async loadTrackIndexAndMarkers(): Promise<void> {
+        const index: Array<{
+            id: number;
+            full: string;
+            start: [number, number] | null; // [lat,lng]
+            bounds: [[number, number], [number, number]];
+        }> = await fetch(
+            `${env === "development" ? process.env.DEV_BE : ""}/tracks/index.json`
+        ).then((r) => r.json());
 
-                const marker = L.marker(start)
-                    .bindTooltip(this.toolTipMarkup(track))
-                    //.setIcon(this.blueMarker)
-                    .on("click", () => {
-                        this.setDay(dayNum);
-                        this.updateContent(dayNum);
-                        this.populateNav();
+        index.forEach((t) => {
+            const dayNum = t.id; // <-- define once, in scope for everything below
+            this.trackIndex[dayNum] = t;
 
-                        this.updateActiveTrack(segment, marker);
-                    })
-                    .addTo(this.map);
+            if (!t.start) return;
 
-                this.segmentsAndMarkers[Number(dayNum)] = { segment, marker };
-            })
-            .addTo(this.map);
-    };
+            const marker = L.marker(t.start)
+                .bindTooltip(this.toolTipMarkup(String(dayNum)))
+                .on("click", async () => {
+                    this.setDay(String(dayNum));
+                    this.updateContent(dayNum);
+                    this.populateNav();
+
+                    this.map.fitBounds(t.bounds, { padding: [10, 10] });
+
+                    await this.showFullDayTrack(dayNum);
+                })
+                .addTo(this.map);
+
+            this.segmentsAndMarkers[dayNum] = { segment: null as any, marker };
+        });
+    }
+
+    async showFullDayTrack(dayNum: number): Promise<void> {
+        const meta = this.trackIndex[dayNum];
+        if (!meta) return;
+
+        // Remove previous active full-detail layer
+        if (this.activeTrackLayer) {
+            this.map.removeLayer(this.activeTrackLayer);
+            this.activeTrackLayer = null;
+        }
+
+        // Fetch (or use cache)
+        let fc = this.fullTrackCache.get(dayNum);
+        if (!fc) {
+            fc = await fetch(
+                `${env === "development" ? process.env.DEV_BE : ""}${meta.full}`
+            ).then((r) => r.json());
+            this.fullTrackCache.set(dayNum, fc);
+        }
+
+        // Add full detail
+        this.activeTrackLayer = L.geoJSON(fc, {
+            style: { color: "red", weight: 5, opacity: 0.95 },
+        }).addTo(this.map);
+
+        // Store "segment" so your nav click path can still call updateActiveTrack-like behavior
+        const marker = this.segmentsAndMarkers[dayNum]?.marker;
+        if (marker) {
+            // Make it behave like your old active-track logic
+            this.resetCurrentTrackGeoJSON();
+            this.updateNewTrackGeoJSON(this.activeTrackLayer, marker);
+        }
+    }
+
+    resetCurrentTrackGeoJSON(): void {
+        if (this.currentSegment) {
+            // currentSegment will be a GeoJSON layer casted as any
+            (this.currentSegment as any).setStyle?.({
+                color: "#2b6cb0",
+                weight: 3,
+                opacity: 0.7,
+            });
+        }
+    }
+
+    updateNewTrackGeoJSON(segment: any, marker: L.Marker): void {
+        segment.setStyle?.({ color: "red", weight: 5, opacity: 0.95 });
+
+        // Fit bounds of the full-detail layer
+        const b = segment.getBounds?.();
+        if (b) this.map.fitBounds(b, { padding: [10, 10] });
+
+        this.currentMarker = marker;
+        this.currentSegment = segment as any;
+    }
 
     updateNewTrack(segment: L.Polyline, marker: L.Marker): void {
         //marker.setIcon(this.redMarker);
@@ -568,11 +661,12 @@ export class WheelieBabes {
         this.updateNewTrack(segment, marker);
     }
 
-    toolTipMarkup(track: string): string {
-        const day: string[] = track.split("/");
-        const day_num: number = Number(day[day.length - 1]);
-
-        const content: ContentItem = this.content[day_num];
+    toolTipMarkup(trackOrDay: string): string {
+        // Accept "12" OR "/tracks/12.gpx" etc.
+        const parts = trackOrDay.split("/");
+        const last = parts[parts.length - 1];
+        const dayNum = Number(last.replace(".gpx", "").replace(".geojson", ""));
+        const content: ContentItem = this.content[dayNum];
 
         return (
             this.getHeadings(content.title, false) +

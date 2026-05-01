@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
 
@@ -17,7 +17,7 @@ static_folder = app.static_folder
 
 CORS(app)
 
-origins = ["https://wheelie-babes.bsik.net", "https://wheelie-babes-remix.test", "https://localhost:3000"]
+origins = ["https://wheelie-babes.bsik.net", "https://wheelie-babes-remix.test", "http://localhost:3000", "http://127.0.0.1:5500"]
 
 @app.route('/', methods=['GET'])
 @cross_origin(origins=origins)
@@ -57,3 +57,24 @@ def get_content():
               day = int(f.split('.')[0])
               filelist[day] = json.load(file);
         return jsonify(filelist)
+
+@app.route('/tracks/index.json', methods=['GET'])
+@cross_origin(origins=origins)
+def tracks_index():
+    # static/tracks/index.json
+    return app.send_static_file('tracks/index.json')
+
+
+@app.route('/tracks/overview.geojson', methods=['GET'])
+@cross_origin(origins=origins)
+def tracks_overview():
+    # static/tracks/overview.geojson
+    return app.send_static_file('tracks/overview.geojson')
+
+
+@app.route('/tracks/full/<day_num>.geojson', methods=['GET'])
+@cross_origin(origins=origins)
+def tracks_full(day_num):
+    # static/tracks/full/<day_num>.geojson
+    return send_from_directory(os.path.join(app.static_folder, 'tracks', 'full'),
+                               f'{day_num}.geojson')

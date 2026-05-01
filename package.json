@@ -9,6 +9,9 @@
     ],
     "homepage": "https://wheelie-babes.bsik.net",
     "devDependencies": {
+        "@tmcw/togeojson": "^7.1.2",
+        "@turf/turf": "^7.3.5",
+        "@xmldom/xmldom": "^0.9.10",
         "dotenv": "^16.4.5",
         "dotenv-webpack": "^8.1.0",
         "npm-run-all": "^4.1.5",
@@ -38,7 +41,8 @@
         "watch:css": "sass --watch --update --style=expanded ./assets/styles:./static",
         "watch:ts": "webpack --watch",
         "compile:css": "sass --no-source-map --style=compressed ./assets/styles:./static",
-        "compile:ts": "webpack"
+        "compile:ts": "webpack",
+        "build:tracks": "node scripts/build-tracks.mjs"
     },
     "dependencies": {
         "@types/leaflet": "^1.9.12",
